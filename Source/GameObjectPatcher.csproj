@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net4.8</TargetFramework>
@@ -18,6 +18,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Publicize Include="Assembly-CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Krafs.Publicizer" Version="2.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="KSPBuildTools" Version="0.0.3-alpha.4" />
   </ItemGroup>
 
