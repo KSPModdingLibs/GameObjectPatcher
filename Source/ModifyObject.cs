@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Security.AccessControl;
@@ -60,8 +61,7 @@ namespace Mutiny
 			return null;
 		}
 
-
-		private static void CreateMutators(ConfigNode configNode, Type objectType, List<Action<object>> mutators)
+		private static void CreateObjectMutators(ConfigNode configNode, Type objectType, List<Action<object>> mutators)
 		{
 			foreach (ConfigNode.Value configValue in configNode.values.values)
 			{
@@ -71,12 +71,81 @@ namespace Mutiny
 					mutators.Add(mutator);
 				}
 			}
+
+			var customNodeHandlers = x_customNodeHandlers.GetValueOrDefault(objectType);
+
+			foreach (ConfigNode childNode in configNode.nodes.nodes)
+			{
+				// TODO: support arbitrary nested objects
+
+				if (customNodeHandlers != null && customNodeHandlers.TryGetValue(childNode.name, out var customNodeHandler))
+				{
+					customNodeHandler.Invoke(childNode, objectType, mutators);
+				}
+			}
+		}
+
+		static Dictionary<Type, Dictionary<string, Action<ConfigNode, Type, List<Action<object>>>>> x_customNodeHandlers = new()
+		{
+			{
+				typeof(GameObject), new Dictionary<string, Action<ConfigNode, Type, List<Action<object>>>>
+				{
+					{ "Components", CreateComponentMutators },
+				}
+			},
+		};
+
+		private static void CreateComponentMutators(ConfigNode configNode, Type type, List<Action<object>> mutators)
+		{
+			foreach (ConfigNode componentNode in configNode.nodes.nodes)
+			{
+				string componentTypeName = componentNode.name;
+				Type componentType = typeof(Component).GetSubclassNamed(componentTypeName);
+
+				if (componentType == null) continue;
+
+				bool createNew = false;
+				if (componentNode.TryGetValue("create", ref createNew))
+				{
+					componentNode.RemoveValue("create");
+				}
+
+				Action<object>[] componentMutators = CreateMutators(componentNode, componentType);
+
+				mutators.Add(obj =>
+				{
+					GameObject gameObject = (GameObject)obj;
+					var component = gameObject.GetComponent(componentType);
+					if (component == null)
+					{
+						if (createNew)
+						{
+							component = gameObject.AddComponent(componentType);
+						}
+						else
+						{
+							Log.Error($"Component {componentTypeName} not found on GameObject {gameObject.name}");
+							return;
+						}
+					}
+					else if (createNew)
+					{
+						// maybe we should still add a new one?
+						Log.Warning($"Component {componentTypeName} already existed on Gamebject {gameObject.name}");
+					}
+
+					foreach (var mutator in componentMutators)
+					{
+						mutator.Invoke(component);
+					}
+				});
+			}
 		}
 
 		private static Action<object>[] CreateMutators(ConfigNode configNode, Type objectType)
 		{
 			List<Action<object>> mutators = new List<Action<object>>();
-			CreateMutators(configNode, objectType, mutators);
+			CreateObjectMutators(configNode, objectType, mutators);
 			return mutators.ToArray();
 		}
 
