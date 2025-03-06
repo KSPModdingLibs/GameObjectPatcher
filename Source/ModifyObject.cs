@@ -9,7 +9,7 @@ namespace Mutiny
 {
 	internal class ModifyObject : ScenePatch
 	{
-		Dictionary<string, List<Action<object>>> m_gameObjectMutators = new Dictionary<string, List<Action<object>>>();
+		Dictionary<string, Action<object>[]> m_gameObjectMutators = new Dictionary<string, Action<object>[]>();
 
 		public override void Load(ConfigNode configNode)
 		{
@@ -20,6 +20,8 @@ namespace Mutiny
 				m_gameObjectMutators.Add(childNode.name, CreateMutators(childNode, typeof(GameObject)));
 			}
 		}
+
+		#region Reflection
 
 		private static MemberInfo GetMemberInfo(Type objectType, string memberName)
 		{
@@ -58,10 +60,9 @@ namespace Mutiny
 			return null;
 		}
 
-		private static List<Action<object>> CreateMutators(ConfigNode configNode, Type objectType)
-		{
-			List<Action<object>> mutators = new List<Action<object>>();
 
+		private static void CreateMutators(ConfigNode configNode, Type objectType, List<Action<object>> mutators)
+		{
 			foreach (ConfigNode.Value configValue in configNode.values.values)
 			{
 				var mutator = CreateMutator(configValue, objectType);
@@ -70,9 +71,16 @@ namespace Mutiny
 					mutators.Add(mutator);
 				}
 			}
-
-			return mutators;
 		}
+
+		private static Action<object>[] CreateMutators(ConfigNode configNode, Type objectType)
+		{
+			List<Action<object>> mutators = new List<Action<object>>();
+			CreateMutators(configNode, objectType, mutators);
+			return mutators.ToArray();
+		}
+
+		#endregion
 
 		public override void Execute()
 		{
