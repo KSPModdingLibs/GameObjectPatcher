@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Log = KSPBuildTools.Log;
 
-namespace GameObjectPatcher
+namespace Mutiny
 {
 	internal class DeleteObject : ScenePatch
 	{

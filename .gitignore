@@ -2,6 +2,6 @@
 bin/
 obj/
 *.user
-GameData/GameObjectPatcher/GameObjectPatcher.dll
-GameData/GameObjectPatcher/GameObjectPatcher.pdb
-GameData/GameObjectPatcher/GameObjectPatcher.version
+GameData/Mutiny/Mutiny.dll
+GameData/Mutiny/Mutiny.pdb
+GameData/Mutiny/Mutiny.version

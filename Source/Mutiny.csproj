@@ -10,9 +10,9 @@
 
   <ItemGroup>
     <KSPVersionFile Include=".">
-      <Destination>$(RepoRootPath)GameData/GameObjectPatcher/GameObjectPatcher.version</Destination>
-      <URL>https://github.com/KSPModdingLibs/GameObjectPatcher/releases/latest/download/GameObjectPatcher.version</URL>
-      <Download>https://github.com/KSPModdingLibs/GameObjectPatcher/releases/latest</Download>
+      <Destination>$(RepoRootPath)GameData/Mutiny/Mutiny.version</Destination>
+      <URL>https://github.com/KSPModdingLibs/Mutiny/releases/latest/download/Mutiny.version</URL>
+      <Download>https://github.com/KSPModdingLibs/Mutiny/releases/latest</Download>
       <KSP_Version_Min>1.12.3</KSP_Version_Min>
     </KSPVersionFile>
   </ItemGroup>

@@ -5,7 +5,7 @@ using System.Security.AccessControl;
 using UnityEngine;
 using Log = KSPBuildTools.Log;
 
-namespace GameObjectPatcher
+namespace Mutiny
 {
 	internal class ModifyObject : ScenePatch
 	{

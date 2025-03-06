@@ -1,4 +1,4 @@
-# GameObjectPatcher Changelog
+# Mutiny Changelog
 
 ## Unreleased
 

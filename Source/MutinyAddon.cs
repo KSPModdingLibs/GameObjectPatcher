@@ -4,10 +4,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Log = KSPBuildTools.Log;
 
-namespace GameObjectPatcher
+namespace Mutiny
 {
 	[KSPAddon(KSPAddon.Startup.Instantly, true)]
-	public class GameObjectPatcherAddon : MonoBehaviour
+	public class MutinyAddon : MonoBehaviour
 	{
 		void Awake()
 		{
