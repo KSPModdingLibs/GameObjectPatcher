@@ -18,7 +18,18 @@ namespace Mutiny
 
 			foreach (var childNode in configNode.nodes.nodes)
 			{
-				m_gameObjectMutators.Add(childNode.name, CreateMutators(childNode, typeof(GameObject)));
+				if (childNode.name == "GameObject")
+				{
+					string path = childNode.GetValue("path");
+					childNode.RemoveValue("path");
+
+					if (path == null)
+					{
+						Log.Error("ModifyObject patch must have a `path` field for each GameObject node");
+					}
+
+					m_gameObjectMutators.Add(path, CreateMutators(childNode, typeof(GameObject)));
+				}
 			}
 		}
 
@@ -91,10 +102,11 @@ namespace Mutiny
 			}
 		}
 
+		// these should probably be wrapped up in a factory class or something
 		static Dictionary<Type, Dictionary<string, Action<ConfigNode, Type, List<Action<object>>>>> x_customNodeHandlers = new()
 		{
 			{
-				typeof(GameObject), new Dictionary<string, Action<ConfigNode, Type, List<Action<object>>>>
+				typeof(GameObject), new ()
 				{
 					{ "Components", CreateComponentMutators },
 				}
