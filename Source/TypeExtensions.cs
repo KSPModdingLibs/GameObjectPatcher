@@ -26,4 +26,14 @@ namespace Mutiny
 			return result;
 		}
 	}
+
+
+	static public class TypeUtilities
+	{
+		public static bool FindTypeNamed(string name, out Type type)
+		{
+			type = AccessTools.TypeByName(name);
+			return type != null;
+		}
+	}
 }

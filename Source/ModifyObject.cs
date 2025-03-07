@@ -11,6 +11,7 @@ namespace Mutiny
 	internal class ModifyObject : ScenePatch
 	{
 		Dictionary<string, Action<object>[]> m_gameObjectMutators = new Dictionary<string, Action<object>[]>();
+		List<Action> m_staticMutators = new List<Action>();
 
 		public override void Load(ConfigNode configNode)
 		{
@@ -29,6 +30,17 @@ namespace Mutiny
 					}
 
 					m_gameObjectMutators.Add(path, CreateMutators(childNode, typeof(GameObject)));
+				}
+				else if (TypeUtilities.FindTypeNamed(childNode.name, out Type type))
+				{
+					var mutators = CreateMutators(childNode, type);
+					m_staticMutators.Add(() =>
+					{
+						foreach (var mutator in mutators)
+						{
+							mutator.Invoke(null);
+						}
+					});
 				}
 			}
 		}
@@ -185,6 +197,11 @@ namespace Mutiny
 				{
 					mutator.Invoke(gameObject);
 				}
+			}
+
+			foreach (var staticMutator in m_staticMutators)
+			{
+				staticMutator.Invoke();
 			}
 		}
 	}
