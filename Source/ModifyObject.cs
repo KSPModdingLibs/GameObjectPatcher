@@ -24,36 +24,42 @@ namespace Mutiny
 
 		#region Reflection
 
-		private static MemberInfo GetMemberInfo(Type objectType, string memberName)
+		private static MemberInfo GetMemberInfo(Type objectType, string memberName, out Type memberType)
 		{
-			MemberInfo memberInfo = objectType.GetField(memberName);
-			if (memberInfo == null)
+			FieldInfo fieldInfo = objectType.GetField(memberName);
+			if (fieldInfo != null)
 			{
-				memberInfo = objectType.GetProperty(memberName);
+				memberType = fieldInfo.FieldType;
+				return fieldInfo;
+			}
+			
+			PropertyInfo propertyInfo = objectType.GetProperty(memberName);
+			if (propertyInfo != null)
+			{
+				memberType = propertyInfo.PropertyType;
+				return propertyInfo;
 			}
 
-			if (memberInfo == null)
-			{
-				Log.Error($"Member {memberName} not found in type {objectType.FullName}");
-			}
+			Log.Error($"Member {memberName} not found in type {objectType.FullName}");
 
-			return memberInfo;
+			memberType = null;
+			return null;
 		}
 
 		private static Action<object> CreateMutator(ConfigNode.Value configValue, Type objectType)
 		{
-			var memberInfo = GetMemberInfo(objectType, configValue.name);
+			var memberInfo = GetMemberInfo(objectType, configValue.name, out Type memberType);
 
 			if (memberInfo != null)
 			{
+				object newValue = ConfigNode.ReadValue(memberType, configValue.value);
+
 				if (memberInfo is FieldInfo fieldInfo)
 				{
-					object newValue = ConfigNode.ReadValue(fieldInfo.FieldType, configValue.value);
 					return obj => fieldInfo.SetValue(obj, newValue);
 				}
 				else if (memberInfo is PropertyInfo propertyInfo)
 				{
-					object newValue = ConfigNode.ReadValue(propertyInfo.PropertyType, configValue.value);
 					return obj => propertyInfo.SetValue(obj, newValue);
 				}
 			}
