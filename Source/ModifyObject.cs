@@ -69,7 +69,7 @@ namespace Mutiny
 			return null;
 		}
 
-		private static Action<object> CreateMutator(ConfigNode.Value configValue, Type objectType)
+		private static Action<object> CreateValueMutator(ConfigNode.Value configValue, Type objectType)
 		{
 			var memberInfo = GetMemberInfo(objectType, configValue.name, out Type memberType);
 
@@ -90,11 +90,31 @@ namespace Mutiny
 			return null;
 		}
 
+		private static Action<object> CreateObjectMutator(ConfigNode childNode, Type objectType)
+		{
+			var memberInfo = GetMemberInfo(objectType, childNode.name, out Type memberType);
+
+			if (memberInfo != null)
+			{
+				var memberMutators = CreateMutators(childNode, memberType);
+				return obj =>
+				{
+					object member = memberInfo is FieldInfo fieldInfo ? fieldInfo.GetValue(obj) : ((PropertyInfo)memberInfo).GetValue(obj);
+					foreach (var memberMutator in memberMutators)
+					{
+						memberMutator.Invoke(member);
+					}
+				};
+			}
+
+			return null;
+		}
+
 		private static void CreateObjectMutators(ConfigNode configNode, Type objectType, List<Action<object>> mutators)
 		{
 			foreach (ConfigNode.Value configValue in configNode.values.values)
 			{
-				var mutator = CreateMutator(configValue, objectType);
+				var mutator = CreateValueMutator(configValue, objectType);
 				if (mutator != null)
 				{
 					mutators.Add(mutator);
@@ -105,11 +125,17 @@ namespace Mutiny
 
 			foreach (ConfigNode childNode in configNode.nodes.nodes)
 			{
-				// TODO: support arbitrary nested objects
-
 				if (customNodeHandlers != null && customNodeHandlers.TryGetValue(childNode.name, out var customNodeHandler))
 				{
 					customNodeHandler.Invoke(childNode, objectType, mutators);
+				}
+				else
+				{
+					var mutator = CreateObjectMutator(childNode, objectType);
+					if (mutator != null)
+					{
+						mutators.Add(mutator);
+					}
 				}
 			}
 		}
