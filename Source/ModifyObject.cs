@@ -104,6 +104,8 @@ namespace Mutiny
 					{
 						memberMutator.Invoke(member);
 					}
+
+					// TODO: if the member is a value type, we might need to do something special here because the value won't be updated in the original object
 				};
 			}
 
